@@ -1,0 +1,13 @@
+# Debian desktop image for osv-scanner vulnerability scanning.
+# Build with scripts/build.sh, which passes DIST_TAG (12, 13, ...).
+# Build context must be the repository root so the COPYs below resolve.
+ARG DIST_TAG=12
+FROM debian:${DIST_TAG}
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8
+
+COPY scripts/common.sh scripts/provision.sh /opt/provision/
+COPY apps.list /opt/provision/apps.list
+
+RUN /opt/provision/provision.sh debian

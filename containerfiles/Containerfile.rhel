@@ -1,0 +1,26 @@
+# Authentic RHEL 9 desktop image for osv-scanner vulnerability scanning.
+#
+# Defaults to Red Hat's freely-pullable UBI 9 base, which is registered with
+# subscription-manager at build time (using activation-key secrets) so all
+# installed content comes from the genuine RHEL 9 repos. Override RHEL_BASE to
+# registry.redhat.io/rhel9/rhel if you prefer the full RHEL base image (run
+# `podman login registry.redhat.io` first).
+#
+# Build with scripts/build.sh, which passes ENABLE_EXTRAS and the RHSM secrets.
+# Build context must be the repository root so the COPYs below resolve.
+ARG RHEL_BASE=registry.access.redhat.com/ubi9/ubi
+FROM ${RHEL_BASE}
+
+# 0 = base RHEL repos only; 1 = also EPEL + RPM Fusion.
+ARG ENABLE_EXTRAS=0
+ENV ENABLE_EXTRAS=${ENABLE_EXTRAS} \
+    LANG=C.UTF-8
+
+COPY scripts/common.sh scripts/common-rhel.sh scripts/provision-rhel.sh /opt/provision/
+COPY apps.list /opt/provision/apps.list
+
+# The RHSM activation key + org are mounted as build secrets (never persisted in
+# a layer). They are optional here so a build on an already-entitled host works
+# too; provision-rhel.sh errors out if neither secrets nor an entitlement exist.
+RUN --mount=type=secret,id=rhsm_org --mount=type=secret,id=rhsm_key \
+    /opt/provision/provision-rhel.sh

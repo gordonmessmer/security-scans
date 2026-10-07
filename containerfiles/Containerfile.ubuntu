@@ -1,0 +1,16 @@
+# Ubuntu desktop image for osv-scanner vulnerability scanning.
+# Build with scripts/build.sh, which passes DIST_TAG (24.04, 26.04, ...).
+# Build context must be the repository root so the COPYs below resolve.
+ARG DIST_TAG=24.04
+FROM ubuntu:${DIST_TAG}
+
+# 1 disables the 'universe' component before any package install (see build.sh).
+ARG DISABLE_UNIVERSE=0
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8
+
+COPY scripts/common.sh scripts/provision.sh /opt/provision/
+COPY apps.list /opt/provision/apps.list
+
+RUN DISABLE_UNIVERSE=${DISABLE_UNIVERSE} /opt/provision/provision.sh ubuntu
